@@ -1,384 +1,140 @@
-# Cybersecurity Essentials - Backend API
+# accepts
 
-Backend server for "The Essential Five" cybersecurity awareness course platform.
+[![NPM Version][npm-version-image]][npm-url]
+[![NPM Downloads][npm-downloads-image]][npm-url]
+[![Node.js Version][node-version-image]][node-version-url]
+[![Build Status][github-actions-ci-image]][github-actions-ci-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
 
-## 📋 Features
+Higher level content negotiation based on [negotiator](https://www.npmjs.com/package/negotiator).
+Extracted from [koa](https://www.npmjs.com/package/koa) for general use.
 
-- **User Authentication**: Secure registration and login with JWT tokens
-- **User Profiles**: Customizable user profiles with expertise tracking
-- **Quiz System**: Complete quiz submission and results tracking
-- **Progress Tracking**: Module completion, time tracking, and certificate management
-- **Analytics**: Detailed performance analytics and statistics
-- **Admin Dashboard**: Comprehensive admin panel for user and content management
-- **Security**: Password hashing, JWT authentication, CORS, helmet security headers
+In addition to negotiator, it allows:
 
-## 🚀 Getting Started
+- Allows types as an array or arguments list, ie `(['text/html', 'application/json'])`
+  as well as `('text/html', 'application/json')`.
+- Allows type shorthands such as `json`.
+- Returns `false` when no types match
+- Treats non-existent headers as `*`
 
-### Prerequisites
+## Installation
 
-- Node.js (v14 or higher)
-- MongoDB (local or MongoDB Atlas)
-- npm or yarn
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
-### Installation
-
-1. **Clone and navigate to the backend**
-```bash
-cd /home/abdulbaqi/gem/backend
+```sh
+$ npm install accepts
 ```
 
-2. **Install dependencies**
-```bash
-npm install
+## API
+
+```js
+var accepts = require('accepts')
 ```
 
-3. **Configure environment variables**
-Create a `.env` file with your configuration (already provided with placeholders):
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/cybersec-essentials
-JWT_SECRET=your-very-secure-secret-key-change-this
-JWT_EXPIRE=7d
-CORS_ORIGIN=http://localhost:3000
-NODE_ENV=development
-```
+### accepts(req)
 
-4. **Start the server**
+Create a new `Accepts` object for the given `req`.
 
-**Development mode** (with auto-reload):
-```bash
-npm run dev
-```
+#### .charset(charsets)
 
-**Production mode**:
-```bash
-npm start
-```
+Return the first accepted charset. If nothing in `charsets` is accepted,
+then `false` is returned.
 
-The server will start on `http://localhost:5000`
+#### .charsets()
 
-## 📡 API Endpoints
+Return the charsets that the request accepts, in the order of the client's
+preference (most preferred first).
 
-### Authentication (`/api/auth`)
+#### .encoding(encodings)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/register` | Register new user | ❌ |
-| POST | `/login` | Login user | ❌ |
-| POST | `/verify-token` | Verify JWT token | ❌ |
-| POST | `/logout` | Logout user | ✅ |
+Return the first accepted encoding. If nothing in `encodings` is accepted,
+then `false` is returned.
 
-**Register Example**:
-```bash
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "securePassword123"
-  }'
-```
+#### .encodings()
 
-**Login Example**:
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "securePassword123"
-  }'
-```
+Return the encodings that the request accepts, in the order of the client's
+preference (most preferred first).
 
-### Users (`/api/users`)
+#### .language(languages)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/profile` | Get current user profile | ✅ |
-| PUT | `/profile` | Update user profile | ✅ |
-| PUT | `/password` | Change password | ✅ |
-| GET | `/progress` | Get learning progress | ✅ |
-| GET | `/quiz-results` | Get quiz history | ✅ |
-| GET | `/dashboard` | Get dashboard overview | ✅ |
-| DELETE | `/account` | Delete user account | ✅ |
+Return the first accepted language. If nothing in `languages` is accepted,
+then `false` is returned.
 
-**Get Profile**:
-```bash
-curl -X GET http://localhost:5000/api/users/profile \
-  -H "Authorization: Bearer <token>"
-```
+#### .languages()
 
-### Quizzes (`/api/quizzes`)
+Return the languages that the request accepts, in the order of the client's
+preference (most preferred first).
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/submit` | Submit quiz answers | ✅ |
-| GET | `/results/:moduleId` | Get module quiz results | ✅ |
-| GET | `/history` | Get all quiz history | ✅ |
-| GET | `/analytics` | Get performance analytics | ✅ |
+#### .type(types)
 
-**Submit Quiz**:
-```bash
-curl -X POST http://localhost:5000/api/quizzes/submit \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{
-    "moduleId": "module1",
-    "moduleName": "The Essential Five",
-    "answers": [
-      {
-        "questionId": 1,
-        "question": "What is...",
-        "selectedAnswer": "A",
-        "correctAnswer": "A",
-        "isCorrect": true
-      }
-    ],
-    "timeSpent": 1200
-  }'
-```
+Return the first accepted type (and it is returned as the same text as what
+appears in the `types` array). If nothing in `types` is accepted, then `false`
+is returned.
 
-### Progress (`/api/progress`)
+The `types` array can contain full MIME types or file extensions. Any value
+that is not a full MIME types is passed to `require('mime-types').lookup`.
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/` | Get user progress | ✅ |
-| PUT | `/update` | Update current module | ✅ |
-| PUT | `/badge` | Add badge | ✅ |
-| PUT | `/certificate` | Award certificate | ✅ |
-| GET | `/statistics` | Get user statistics | ✅ |
+#### .types()
 
-### Courses (`/api/courses`)
+Return the types that the request accepts, in the order of the client's
+preference (most preferred first).
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/` | Get all course modules | ❌ |
-| GET | `/:moduleId` | Get module details | ❌ |
-| GET | `/:moduleId/lessons` | Get module lessons | ❌ |
+## Examples
 
-### Admin (`/api/admin`)
+### Simple type negotiation
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/users` | List all users | ✅ Admin |
-| GET | `/users/:userId` | Get user details | ✅ Admin |
-| PUT | `/users/:userId` | Update user | ✅ Admin |
-| DELETE | `/users/:userId` | Delete user | ✅ Admin |
-| GET | `/statistics` | Get platform statistics | ✅ Admin |
-| GET | `/analytics` | Get analytics report | ✅ Admin |
-| POST | `/user-activity` | Get user activity report | ✅ Admin |
+This simple example shows how to use `accepts` to return a different typed
+respond body based on what the client wants to accept. The server lists it's
+preferences in order and will get back the best match between the client and
+server.
 
-## 📊 Database Models
+```js
+var accepts = require('accepts')
+var http = require('http')
 
-### User Schema
-```javascript
-{
-  name: String,
-  email: String (unique),
-  password: String (hashed),
-  role: 'user' | 'admin',
-  profilePicture: String,
-  bio: String,
-  expertise: [String],
-  isVerified: Boolean,
-  isActive: Boolean,
-  lastLogin: Date,
-  createdAt: Date,
-  updatedAt: Date
+function app (req, res) {
+  var accept = accepts(req)
+
+  // the order of this list is significant; should be server preferred order
+  switch (accept.type(['json', 'html'])) {
+    case 'json':
+      res.setHeader('Content-Type', 'application/json')
+      res.write('{"hello":"world!"}')
+      break
+    case 'html':
+      res.setHeader('Content-Type', 'text/html')
+      res.write('<b>hello, world!</b>')
+      break
+    default:
+      // the fallback is text/plain, so no need to specify it above
+      res.setHeader('Content-Type', 'text/plain')
+      res.write('hello, world!')
+      break
+  }
+
+  res.end()
 }
+
+http.createServer(app).listen(3000)
 ```
 
-### QuizResult Schema
-```javascript
-{
-  userId: ObjectId,
-  moduleId: String,
-  moduleName: String,
-  answers: [{
-    questionId: Number,
-    question: String,
-    selectedAnswer: String,
-    correctAnswer: String,
-    isCorrect: Boolean
-  }],
-  totalQuestions: Number,
-  correctAnswers: Number,
-  score: Number (0-100),
-  timeSpent: Number (seconds),
-  difficulty: 'easy' | 'medium' | 'hard',
-  passed: Boolean,
-  completedAt: Date
-}
+You can test this out with the cURL program:
+```sh
+curl -I -H'Accept: text/html' http://localhost:3000/
 ```
 
-### Progress Schema
-```javascript
-{
-  userId: ObjectId (unique),
-  modulesCompleted: [{
-    moduleId: String,
-    moduleName: String,
-    completedAt: Date,
-    score: Number,
-    timeSpent: Number
-  }],
-  currentModule: String,
-  totalTimeSpent: Number,
-  completionPercentage: Number (0-100),
-  averageScore: Number (0-100),
-  streakDays: Number,
-  lastActivityDate: Date,
-  certificateEarned: Boolean,
-  certificateDate: Date,
-  badges: [String],
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+## License
 
-## 🔐 Authentication
+[MIT](LICENSE)
 
-This API uses JWT (JSON Web Tokens) for authentication:
-
-1. **Register**: Create new user account
-2. **Login**: Get JWT token
-3. **Protected Routes**: Include token in Authorization header
-   ```
-   Authorization: Bearer <token>
-   ```
-
-Tokens expire after 7 days (configurable via `JWT_EXPIRE` in .env)
-
-## 🛡️ Security Features
-
-- **Password Hashing**: Bcrypt with salt rounds
-- **JWT Authentication**: Secure token-based auth
-- **CORS**: Cross-origin request handling
-- **Helmet**: Security headers middleware
-- **Input Validation**: Express-validator for request validation
-- **Rate Limiting Ready**: Structure supports rate limiting implementation
-
-## 🧪 Testing the API
-
-### Using cURL
-
-**1. Register a user**:
-```bash
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test User",
-    "email": "test@example.com",
-    "password": "Test123456"
-  }'
-```
-
-**2. Login**:
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "Test123456"
-  }'
-```
-
-**3. Get User Profile** (use token from login):
-```bash
-curl -X GET http://localhost:5000/api/users/profile \
-  -H "Authorization: Bearer <your_token_here>"
-```
-
-### Using Postman
-
-1. Import the endpoints into Postman
-2. Set up environment variables for `base_url` and `token`
-3. Test each endpoint systematically
-
-## 📁 Project Structure
-
-```
-backend/
-├── server.js              # Main server file
-├── package.json          # Dependencies
-├── .env                  # Environment variables
-├── models/              # Database schemas
-│   ├── User.js
-│   ├── QuizResult.js
-│   └── Progress.js
-├── routes/              # API route handlers
-│   ├── auth.js
-│   ├── users.js
-│   ├── quizzes.js
-│   ├── progress.js
-│   ├── courses.js
-│   └── admin.js
-└── middleware/          # Custom middleware
-    └── auth.js
-```
-
-## 🔧 Environment Variables
-
-```env
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/cybersec-essentials
-
-# JWT
-JWT_SECRET=your-very-secure-secret-key
-JWT_EXPIRE=7d
-
-# CORS
-CORS_ORIGIN=http://localhost:3000
-
-# Optional: Email (for future notifications)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-
-# Admin
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=AdminPassword123
-```
-
-## 🐛 Troubleshooting
-
-### MongoDB Connection Error
-- Ensure MongoDB is running
-- Check MongoDB URI in .env
-- For MongoDB Atlas, whitelist your IP
-
-### Port Already in Use
-```bash
-# Find and kill process on port 5000
-lsof -ti:5000 | xargs kill -9
-```
-
-### Token Validation Error
-- Ensure token is in correct format: `Authorization: Bearer <token>`
-- Check if token has expired
-- Verify JWT_SECRET matches between token generation and validation
-
-## 📈 Next Steps
-
-1. **Connect Frontend**: Update frontend JavaScript to call these API endpoints
-2. **Add Email Notifications**: Implement nodemailer for welcome emails, password reset
-3. **Rate Limiting**: Add express-rate-limit to prevent abuse
-4. **Logging**: Implement Winston or Pino for better logging
-5. **Testing**: Add Jest/Mocha tests for API endpoints
-6. **Deployment**: Deploy to Heroku, AWS, or DigitalOcean
-
-## 📝 License
-
-MIT
-
-## 👨‍💻 Author
-
-Abdulbaqi Usman
-
-## 📞 Support
-
-For issues or questions, please reach out through the course platform.
+[coveralls-image]: https://badgen.net/coveralls/c/github/jshttp/accepts/master
+[coveralls-url]: https://coveralls.io/r/jshttp/accepts?branch=master
+[github-actions-ci-image]: https://badgen.net/github/checks/jshttp/accepts/master?label=ci
+[github-actions-ci-url]: https://github.com/jshttp/accepts/actions/workflows/ci.yml
+[node-version-image]: https://badgen.net/npm/node/accepts
+[node-version-url]: https://nodejs.org/en/download
+[npm-downloads-image]: https://badgen.net/npm/dm/accepts
+[npm-url]: https://npmjs.org/package/accepts
+[npm-version-image]: https://badgen.net/npm/v/accepts
